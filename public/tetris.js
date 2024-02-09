@@ -44,6 +44,7 @@ const COLORS = [
   'green',
 ];
 
+// blocks: [[x, y], [x, y], ...]
 function isTouching(blocks, direction) {
   for (let i = 0; i < blocks.length; i++) {
     if (blocks[i] === null) {
@@ -51,26 +52,26 @@ function isTouching(blocks, direction) {
     }
     switch (direction) {
       case 'left':
-        if (blocks[i].x === 0) {
+        if (blocks[i][0] === 0) {
           return true;
         }
-        if (board[blocks[i].y][blocks[i].x - 1]) {
+        if (board[blocks[i][1]][blocks[i][0] - 1]) {
           return true;
         }
         break;
       case 'right':
-        if (blocks[i].x === COLS - 1) {
+        if (blocks[i][0] === COLS - 1) {
           return true;
         }
-        if (board[blocks[i].y][blocks[i].x + 1]) {
+        if (board[blocks[i][1]][blocks[i][0] + 1]) {
           return true;
         }
         break;
       case 'down':
-        if (blocks[i].y === ROWS - 1) {
+        if (blocks[i][1] === ROWS - 1) {
           return true;
         }
-        if (board[blocks[i].y + 1][blocks[i].x]) {
+        if (board[blocks[i][1] + 1][blocks[i][0]]) {
           return true;
         }
         break;
@@ -84,36 +85,36 @@ class Piece {
   y = 0;
   shapeIndex = 0;
   shape = [];
-  constructor(x, y, shape) {
+  constructor(x, y, shapeIndex) {
     this.x = x;
     this.y = y;
-    this.shape = shape;
-    this.shapeIndex = SHAPES.indexOf(shape);
+    this.shape = SHAPES[shapeIndex];
+    this.shapeIndex = shapeIndex;
   }
 
   /* Returns false if the piece has done falling (should not move anymore) */
   move(direction) {
+    const blocks = this.getBlocks();
     switch (direction) {
       case 'left':
-        if (!isTouching(this.getBlocks(), 'left')) {
+        if (!isTouching(blocks, 'left')) {
           this.x -= 1;
         }
         break;
       case 'right':
-        if (!isTouching(this.getBlocks(), 'right')) {
+        if (!isTouching(blocks, 'right')) {
           this.x += 1;
         }
         break;
       case 'down':
-        if (!isTouching(this.getBlocks(), 'down')) {
+        if (!isTouching(blocks, 'down')) {
           this.y += 1;
           break;
         } else {
-          const blocks = this.getBlocks();
           for (let i = 0; i < blocks.length; i++) {
             const block = blocks[i];
             if (block) {
-              board[block.y][block.x] = block;
+              board[block[1]][block[0]] = new Block(COLORS[this.shapeIndex]);
             }
           }
           return false;
@@ -145,38 +146,37 @@ class Piece {
   getHTML() {
     const piece = document.createElement('div');
     piece.className = 'piece';
-    this.getBlocks().forEach(block => block && piece.appendChild(block.getHTML()));
+    this.getBlocks().forEach(block =>
+      block &&
+      piece.appendChild(
+        (new Block(COLORS[this.shapeIndex])).getHTML(block[0], block[1])
+      )
+    );
     return piece;
   }
 
   getBlocks() {
     return this.shape.reduce((blocks, row, i) =>
       blocks.concat(
-        row.map((cell, j) => cell ? new Block(this.x + j, this.y + i, COLORS[this.shapeIndex]) : null)
+        row.map((cell, j) => cell ? [this.x + i, this.y + j] : null)
       ), []
     ).filter(block => block !== null);
   }
 }
 
 class Block {
-  x = 0;
-  y = 0;
   color = '';
-  piece = null;
-  constructor(x, y, color, piece) {
-    this.x = x;
-    this.y = y;
+  constructor(color) {
     this.color = color;
-    this.piece = piece;
   }
 
-  getHTML() {
+  getHTML(x, y) {
     const block = document.createElement('div');
     block.className = 'block';
     block.style.backgroundColor = this.color;
     block.style.border = `1px solid black`;
-    block.style.left = `${this.x * 30}px`;
-    block.style.top = `${this.y * 30}px`;
+    block.style.left = `${x * 30}px`;
+    block.style.top = `${y * 30}px`;
     return block;
   }
 }
@@ -188,8 +188,9 @@ function loop() {
 
 function draw() {
   boardElement.innerHTML = '';
-  board.forEach(row => row.forEach(block => block && boardElement.appendChild(block.getHTML())));
+  board.forEach((row, i) => row.forEach((block, j) => block && boardElement.appendChild(block.getHTML(j, i))));
   if (piece) boardElement.appendChild(piece.getHTML());
+  if (nextPiece) boardElement.appendChild(nextPiece.getHTML());
 }
 
 async function update() {
@@ -213,7 +214,12 @@ async function update() {
         falling_speed += 0.1;
       }
     }
-    piece = new Piece(COLS / 2 - 2, 0, SHAPES[Math.floor(Math.random() * SHAPES.length)]);
+    if (nextPiece) {
+      nextPiece.x = COLS / 2 - 2;
+      nextPiece.y = 0;
+      piece = nextPiece;
+    }
+    nextPiece = new Piece(-5, 0, Math.floor(Math.random() * SHAPES.length));
   }
   await new Promise(r => setTimeout(r, 1000 / falling_speed));
   loop();
@@ -221,7 +227,6 @@ async function update() {
 
 boardElement.style.width = `${COLS * 30}px`;
 boardElement.style.height = `${ROWS * 30}px`;
-
 document.addEventListener('keydown', event => {
   switch (event.key) {
     case 'a' || 'A':
@@ -244,10 +249,10 @@ document.addEventListener('keydown', event => {
 });
 
 let piece;
+let nextPiece;
 let score;
 let falling_speed;
 let board;
-
 function play() {
   gameOverElement.setAttribute('style', 'display: none;');
   piece = null;
