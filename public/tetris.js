@@ -190,7 +190,10 @@ function draw() {
   boardElement.innerHTML = '';
   board.forEach((row, i) => row.forEach((block, j) => block && boardElement.appendChild(block.getHTML(j, i))));
   if (piece) boardElement.appendChild(piece.getHTML());
-  if (nextPiece) boardElement.appendChild(nextPiece.getHTML());
+
+  const nextPieceContainer = document.querySelector('.next-piece');
+  nextPieceContainer.innerHTML = '';
+  if (nextPiece) nextPieceContainer.appendChild(nextPiece.getHTML());
 }
 
 async function update() {
@@ -219,7 +222,7 @@ async function update() {
       nextPiece.y = 0;
       piece = nextPiece;
     }
-    nextPiece = new Piece(-5, 0, Math.floor(Math.random() * SHAPES.length));
+    nextPiece = new Piece(1, 1, Math.floor(Math.random() * SHAPES.length));
   }
   await new Promise(r => setTimeout(r, 1000 / falling_speed));
   loop();

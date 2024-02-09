@@ -20,7 +20,12 @@ body {
   margin-bottom: 1rem;
 }
 
-#board {
+.game {
+  display: flex;
+}
+
+#board,
+.next-piece {
   position: relative;
   border: 30px solid rgb(100, 100, 100);
   background: repeating-linear-gradient(to right,
@@ -29,6 +34,13 @@ body {
       rgb(10, 10, 10) 30px,
       rgb(10, 10, 10) 60px);
   box-sizing: content-box;
+}
+
+.next-piece {
+  width: 120px;
+  height: 180px;
+  border: 30px solid rgb(100, 100, 100);
+  border-right: 0;
 }
 
 .block {
