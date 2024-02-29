@@ -5,13 +5,13 @@
 - Space to rotate the piece
 
 ## End Game Condition
-- The game ends when a piece touches top of the game board
+- The game ends when a piece touches top of the game board<br />
 ![Tetris Game Over](/docs/design_system/tetris_game_over.png)
 
 ## Gameplay
-- Pieces of random shapes appear at the top of the screen
+- Pieces of random shapes appear at the top of the screen<br />
 ![Tetris Shapes](/docs/design_system/tetris_shapes.png)
-- The player can see what the next piece will be by looking at the left of the screen
+- The player can see what the next piece will be by looking at the left of the screen<br />
 ![Tetris Next Piece](/docs/design_system/tetris_next_piece.png)
 - The goal is to place the pieces as they fall to form complete rows
 - When one such row is formed, it disapears and the blocks above all go down by one tile
