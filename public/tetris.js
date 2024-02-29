@@ -44,34 +44,35 @@ const COLORS = [
   'green',
 ];
 
-// blocks: [[x, y], [x, y], ...]
-function isTouching(blocks, direction) {
-  for (let i = 0; i < blocks.length; i++) {
-    if (blocks[i] === null) {
+// piece: [[x, y], [x, y], ...]
+// board: [[0, 0, 1, 0, ...], ...]
+function isTouching(board, piece, direction) {
+  for (let i = 0; i < piece.length; i++) {
+    if (piece[i] === null) {
       continue;
     }
     switch (direction) {
       case 'left':
-        if (blocks[i][0] === 0) {
+        if (piece[i][0] === 0) {
           return true;
         }
-        if (board[blocks[i][1]][blocks[i][0] - 1]) {
+        if (board[piece[i][1]][piece[i][0] - 1]) {
           return true;
         }
         break;
       case 'right':
-        if (blocks[i][0] === COLS - 1) {
+        if (piece[i][0] === COLS - 1) {
           return true;
         }
-        if (board[blocks[i][1]][blocks[i][0] + 1]) {
+        if (board[piece[i][1]][piece[i][0] + 1]) {
           return true;
         }
         break;
       case 'down':
-        if (blocks[i][1] === ROWS - 1) {
+        if (piece[i][1] === ROWS - 1) {
           return true;
         }
-        if (board[blocks[i][1] + 1][blocks[i][0]]) {
+        if (board[piece[i][1] + 1][piece[i][0]]) {
           return true;
         }
         break;
@@ -93,30 +94,24 @@ class Piece {
   }
 
   /* Returns false if the piece has done falling (should not move anymore) */
-  move(direction) {
+  move(board, direction) {
     const blocks = this.getBlocks();
     switch (direction) {
       case 'left':
-        if (!isTouching(blocks, 'left')) {
+        if (!isTouching(board, blocks, 'left')) {
           this.x -= 1;
         }
         break;
       case 'right':
-        if (!isTouching(blocks, 'right')) {
+        if (!isTouching(board, blocks, 'right')) {
           this.x += 1;
         }
         break;
       case 'down':
-        if (!isTouching(blocks, 'down')) {
+        if (!isTouching(board, blocks, 'down')) {
           this.y += 1;
           break;
         } else {
-          for (let i = 0; i < blocks.length; i++) {
-            const block = blocks[i];
-            if (block) {
-              board[block[1]][block[0]] = new Block(COLORS[this.shapeIndex]);
-            }
-          }
           return false;
         }
     }
@@ -128,17 +123,15 @@ class Piece {
     for (let i = 0; i < this.shape[0].length; i++) {
       newShape.push(this.shape.map(row => row[i]).reverse());
     }
+    console.log(this.shape);
+    console.log(newShape);
+    console.log(this.x, this.y);
     if (newShape.every((row, i) => row.every((cell, j) => {
-      if (cell) {
-        if (this.x + j < 0 || this.x + j >= COLS || this.y + i >= ROWS) {
-          return false;
-        }
-        if (board[this.y + i][this.x + j]) {
-          return false;
-        }
-      }
-      return true;
-    }))) {
+      const x = this.x + (newShape.length - i);
+      const y = this.y + (row.length - j);
+      return !cell || x >= 0 && x < COLS && y < ROWS && !board[y][x];
+    }
+    ))) {
       this.shape = newShape;
     }
   }
@@ -149,7 +142,7 @@ class Piece {
     this.getBlocks().forEach(block =>
       block &&
       piece.appendChild(
-        (new Block(COLORS[this.shapeIndex])).getHTML(block[0], block[1])
+        getBlockHTML(COLORS[this.shapeIndex], block[0], block[1])
       )
     );
     return piece;
@@ -164,45 +157,38 @@ class Piece {
   }
 }
 
-class Block {
-  color = '';
-  constructor(color) {
-    this.color = color;
-  }
-
-  getHTML(x, y) {
-    const block = document.createElement('div');
-    block.className = 'block';
-    block.style.backgroundColor = this.color;
-    block.style.border = `1px solid black`;
-    block.style.left = `${x * 30}px`;
-    block.style.top = `${y * 30}px`;
-    return block;
-  }
+function getBlockHTML(color, x, y) {
+  const block = document.createElement('div');
+  block.className = 'block';
+  block.style.backgroundColor = color;
+  block.style.border = `1px solid black`;
+  block.style.left = `${x * 30}px`;
+  block.style.top = `${y * 30}px`;
+  return block;
 }
 
-function loop() {
-  draw();
+async function loop() {
   update();
+  await new Promise(resolve => setTimeout(resolve, 1000 / falling_speed));
+  loop();
 }
 
 function draw() {
   boardElement.innerHTML = '';
-  board.forEach((row, i) => row.forEach((block, j) => block && boardElement.appendChild(block.getHTML(j, i))));
+  board.forEach((row, i) => row.forEach((block, j) => block && boardElement.appendChild(getBlockHTML(block, j, i))));
   if (piece) boardElement.appendChild(piece.getHTML());
 
   const nextPieceContainer = document.querySelector('.next-piece');
   nextPieceContainer.innerHTML = '';
   if (nextPiece) nextPieceContainer.appendChild(nextPiece.getHTML());
+
+  scoreElement.forEach(e => (e.innerHTML = `Score: ${score}`));
 }
 
 async function update() {
-  if (!piece || !piece.move('down')) {
-    if (piece && piece.y <= 0) {
-      gameOverElement.setAttribute('style', 'display: block;');
-      return;
-    }
+  if (!piece) {
 
+    // check for full rows
     for (let i = 0; i < board.length; i++) {
       if (board[i].every(cell => cell !== null)) {
         for (let j = 0; j <= i; j++) {
@@ -210,38 +196,62 @@ async function update() {
         }
         board.splice(i, 1);
         board.unshift(new Array(COLS).fill(null));
-        await new Promise(r => setTimeout(r, 1000 / falling_speed));
-        draw();
         score += 10;
-        scoreElement.forEach(e => (e.innerHTML = `Score: ${score}`));
         falling_speed += 0.1;
+
+        draw();
+        return;
       }
     }
+
+    // switch to next piece
     if (nextPiece) {
       nextPiece.x = COLS / 2 - 2;
       nextPiece.y = 0;
       piece = nextPiece;
     }
     nextPiece = new Piece(1, 1, Math.floor(Math.random() * SHAPES.length));
+
+    draw();
+    return;
   }
-  await new Promise(r => setTimeout(r, 1000 / falling_speed));
-  loop();
+
+  if (!piece.move(board, 'down')) {
+    if (piece.y <= 0) {
+      gameOverElement.setAttribute('style', 'display: block;');
+
+      draw();
+      return;
+    }
+
+    const blocks = piece.getBlocks();
+    for (let i = 0; i < blocks.length; i++) {
+      const block = blocks[i];
+      if (block) {
+        board[block[1]][block[0]] = COLORS[piece.shapeIndex];
+      }
+    }
+    piece = null;
+  }
+
+  draw();
 }
 
 boardElement.style.width = `${COLS * 30}px`;
 boardElement.style.height = `${ROWS * 30}px`;
 document.addEventListener('keydown', event => {
+  if (!piece) return;
   switch (event.key) {
     case 'a' || 'A':
-      piece.move('left');
+      piece.move(board, 'left');
       draw();
       break;
     case 'd' || 'D':
-      piece.move('right');
+      piece.move(board, 'right');
       draw();
       break;
     case 's' || 'S':
-      piece.move('down');
+      piece.move(board, 'down');
       draw();
       break;
     case ' ':
@@ -270,7 +280,8 @@ function play() {
   }
 
   scoreElement.forEach(e => (e.innerHTML = `Score: ${score}`));
-  update();
+
+  loop();
 }
 
 play();
