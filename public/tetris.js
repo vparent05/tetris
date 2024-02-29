@@ -171,7 +171,9 @@ function getBlockHTML(color, x, y) {
 }
 
 async function loop() {
-  update();
+  if (!await update()) {
+    return;
+  }
   await new Promise(resolve => setTimeout(resolve, 1000 / falling_speed));
   loop();
 }
@@ -203,7 +205,7 @@ async function update() {
         falling_speed += 0.1;
 
         draw();
-        return;
+        return true;
       }
     }
 
@@ -216,7 +218,7 @@ async function update() {
     nextPiece = new Piece(1, 1, Math.floor(Math.random() * SHAPES.length));
 
     draw();
-    return;
+    return true;
   }
 
   if (!piece.move(board, 'down')) {
@@ -224,7 +226,7 @@ async function update() {
       gameOverElement.setAttribute('style', 'display: block;');
 
       draw();
-      return;
+      return false;
     }
 
     const blocks = piece.getBlocks();
@@ -238,6 +240,7 @@ async function update() {
   }
 
   draw();
+  return true;
 }
 
 boardElement.style.width = `${COLS * 30}px`;
