@@ -120,16 +120,19 @@ class Piece {
 
   rotate() {
     const newShape = [];
-    for (let i = 0; i < this.shape[0].length; i++) {
-      newShape.push(this.shape.map(row => row[i]).reverse());
+    for (let i = 0; i < this.shape.length; i++) {
+      for (let j = 0; j < this.shape[i].length; j++) {
+        if (newShape[j] === undefined) {
+          newShape[j] = [];
+        }
+        newShape[j][this.shape.length - i - 1] = this.shape[i][j];
+      }
     }
-    console.log(this.shape);
-    console.log(newShape);
-    console.log(this.x, this.y);
+
     if (newShape.every((row, i) => row.every((cell, j) => {
       const x = this.x + (newShape.length - i);
       const y = this.y + (row.length - j);
-      return !cell || x >= 0 && x < COLS && y < ROWS && !board[y][x];
+      return !cell || x >= 0 && x <= COLS && y < ROWS && !board[y][x];
     }
     ))) {
       this.shape = newShape;
