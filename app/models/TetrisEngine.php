@@ -13,7 +13,7 @@ function update($game)
       }
       if ($isRowFull) {
         for ($j = 0; $j <= $i; $j++) {
-          for ($game->$board[$j] as $cell) {
+          foreach ($game->$board[$j] as $cell) {
             $cell && $cell->y++;
           }
         }
