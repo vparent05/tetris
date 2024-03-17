@@ -1,5 +1,5 @@
 <?php
-class GameState
+class TetrisGame
 {
   public $board;
   public $piece;
