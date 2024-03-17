@@ -19,3 +19,4 @@
 ## Score
 - The score goes up by 10 for every destroyed rows
 - The falling speed of the pieces also goes up for every destroyed rows
+- There is a session leaderboard to the right of the board with the 10 best scores
