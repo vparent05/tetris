@@ -1,6 +1,7 @@
 <?php
 class TetrisGame
 {
+  public $id;
   public $board;
   public $piece;
   public $nextPiece;
@@ -8,7 +9,11 @@ class TetrisGame
   public $isGameOver;
 
   public function __construct($rows, $cols)
-  {
+  { 
+    if (!isset($_SESSION['idCounter'])) {
+      $_SESSION['idCounter'] = 0;
+    }
+    $this->id = $_SESSION['idCounter']++;
     $this->board = [];
     $this->piece = null;
     $this->nextPiece = null;

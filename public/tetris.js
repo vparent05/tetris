@@ -1,6 +1,7 @@
 const boardElement = document.getElementById('board');
 const scoreElement = document.querySelectorAll('.score');
 const gameOverElement = document.querySelector('.game-over');
+const leaderboardElement = document.querySelector('.leaderboard>ol');
 
 const COLORS = [
   'cyan',
@@ -46,7 +47,7 @@ async function loop() {
   await loop();
 }
 
-function draw(game) {
+function draw(game, leaderboard) {
   boardElement.innerHTML = '';
   game.board.forEach((row, i) => row.forEach((block, j) => block && boardElement.appendChild(getBlockHTML(block, j, i))));
   if (game.piece) boardElement.appendChild(getPieceHTML(game.piece));
@@ -56,11 +57,18 @@ function draw(game) {
   if (game.nextPiece) nextPieceContainer.appendChild(getPieceHTML(game.nextPiece));
 
   scoreElement.forEach(e => (e.innerHTML = `Score: ${game.score}`));
+
+  leaderboardElement.innerHTML = '';
+  leaderboard.forEach(({ score, gameId }) => {
+    const li = document.createElement('li');
+    li.innerHTML = `Game #${gameId}: ${score}`;
+    leaderboardElement.appendChild(li);
+  });
 }
 
 async function update() {
-  const game = await fetch('http://localhost:80/api.php?action=update').then(res => res.json());
-  draw(game);
+  const { game, leaderboard } = await fetch('http://localhost:80/api.php?action=update').then(res => res.json());
+  draw(game, leaderboard);
   return game;
 }
 
@@ -69,32 +77,32 @@ document.addEventListener('keydown', event => {
     case 'a' || 'A':
       fetch('http://localhost:80/api.php?action=move&direction=left')
         .then(res => res.json())
-        .then(draw);
+        .then(res => draw(res.game, res.leaderboard));
       break;
     case 'd' || 'D':
       fetch('http://localhost:80/api.php?action=move&direction=right')
         .then(res => res.json())
-        .then(draw);
+        .then(res => draw(res.game, res.leaderboard));
       break;
     case 's' || 'S':
       fetch('http://localhost:80/api.php?action=move&direction=down')
         .then(res => res.json())
-        .then(draw);
+        .then(res => draw(res.game, res.leaderboard));
       break;
     case ' ':
       fetch('http://localhost:80/api.php?action=move&direction=rotate')
         .then(res => res.json())
-        .then(draw);
+        .then(res => draw(res.game, res.leaderboard));
       break;
   }
 });
 
 async function play() {
   gameOverElement.setAttribute('style', 'display: none;');
-  const game = await fetch('http://localhost:80/api.php?action=new').then(res => res.json());
+  const { game, leaderboard } = await fetch('http://localhost:80/api.php?action=new').then(res => res.json());
   boardElement.style.width = `${game.board[0].length * 30}px`;
   boardElement.style.height = `${game.board.length * 30}px`;
-  draw(game);
+  draw(game, leaderboard);
   await loop();
   gameOverElement.setAttribute('style', 'display: block;');
 }
