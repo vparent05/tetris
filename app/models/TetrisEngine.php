@@ -55,7 +55,10 @@ function update($game)
 
 function move($direction, $game)
 {
-  $game->$piece->move($game->$board, 'left');
+  if ($direction == null) {
+    return $game;
+  }
+  $game->$piece->move($game->$board, $direction);
   return $game;
 }
 

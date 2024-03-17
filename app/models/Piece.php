@@ -75,6 +75,9 @@ class Piece
         } else {
           return false;
         }
+      case 'rotate':
+        rotate($board);
+        break;
     }
     return true;
   }
