@@ -1,47 +1,46 @@
 <?php
-
-$SHAPES = [
-  [
-    [1, 1, 1, 1]
-  ],
-  [
-    [1, 1],
-    [1, 1]
-  ],
-  [
-    [1, 1, 1],
-    [0, 1, 0]
-  ],
-  [
-    [1, 1, 1],
-    [1, 0, 0]
-  ],
-  [
-    [1, 1, 1],
-    [0, 0, 1]
-  ],
-  [
-    [1, 1, 0],
-    [0, 1, 1]
-  ],
-  [
-    [0, 1, 1],
-    [1, 1, 0]
-  ]
-];
-
-$COLORS = [
-  'cyan',
-  'yellow',
-  'purple',
-  'orange',
-  'blue',
-  'red',
-  'green',
-];
-
 class Piece
 {
+  public static $SHAPES = [
+    [
+      [1, 1, 1, 1]
+    ],
+    [
+      [1, 1],
+      [1, 1]
+    ],
+    [
+      [1, 1, 1],
+      [0, 1, 0]
+    ],
+    [
+      [1, 1, 1],
+      [1, 0, 0]
+    ],
+    [
+      [1, 1, 1],
+      [0, 0, 1]
+    ],
+    [
+      [1, 1, 0],
+      [0, 1, 1]
+    ],
+    [
+      [0, 1, 1],
+      [1, 1, 0]
+    ]
+  ];
+
+  public static $COLORS = [
+    'cyan',
+    'yellow',
+    'purple',
+    'orange',
+    'blue',
+    'red',
+    'green',
+  ];
+
   public $x = 0;
   public $y = 0;
   public $shapeIndex = 0;
@@ -51,7 +50,7 @@ class Piece
   {
     $this->x = $x;
     $this->y = $y;
-    $this->shape = $SHAPES[$shapeIndex];
+    $this->shape = Piece::$SHAPES[$shapeIndex];
     $this->shapeIndex = $shapeIndex;
   }
 
@@ -76,7 +75,7 @@ class Piece
           return false;
         }
       case 'rotate':
-        rotate($board);
+        $this->rotate($board);
         break;
     }
     return true;
@@ -131,26 +130,26 @@ class Piece
       }
       switch ($direction) {
         case 'left':
-          if ($piece[$i][0] === 0) {
+          if ($blocks[$i][0] === 0) {
             return true;
           }
-          if ($board[$piece[$i][1]][$piece[$i][0] - 1]) {
+          if ($board[$blocks[$i][1]][$blocks[$i][0] - 1]) {
             return true;
           }
           break;
         case 'right':
-          if ($piece[$i][0] === count($board[0]) - 1) {
+          if ($blocks[$i][0] === count($board[0]) - 1) {
             return true;
           }
-          if ($board[$piece[$i][1]][piece[$i][0] + 1]) {
+          if ($board[$blocks[$i][1]][$blocks[$i][0] + 1]) {
             return true;
           }
           break;
         case 'down':
-          if ($piece[$i][1] === count($board) - 1) {
+          if ($blocks[$i][1] === count($board) - 1) {
             return true;
           }
-          if ($board[$piece[$i][1] + 1][piece[$i][0]]) {
+          if ($board[$blocks[$i][1] + 1][$blocks[$i][0]]) {
             return true;
           }
           break;

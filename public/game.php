@@ -1,5 +1,4 @@
 <?php
-require_once('_config.php');
 require_once('../app/models/TetrisEngine.php');
 require_once('../app/models/TetrisGame.php');
 
