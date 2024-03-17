@@ -15,11 +15,6 @@ class TetrisEngine {
           }
         }
         if ($isRowFull) {
-          for ($j = 0; $j <= $i; $j++) {
-            foreach ($game->board[$j] as $cell) {
-              $cell && $cell->y++;
-            }
-          }
           array_splice($game->board, $i, 1);
           array_unshift($game->board, array_fill(0, count($game->board[0]), null));
           $game->score += 10;
@@ -58,7 +53,7 @@ class TetrisEngine {
   
   public static function move($direction, $game)
   {
-    if ($direction == null) {
+    if ($direction == null || !$game->piece) {
       return $game;
     }
     $game->piece->move($game->board, $direction);

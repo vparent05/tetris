@@ -1,7 +1,4 @@
 <?php
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: *');
-
 require_once('../app/models/TetrisEngine.php');
 require_once('../app/models/TetrisGame.php');
 

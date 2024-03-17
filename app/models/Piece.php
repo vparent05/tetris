@@ -83,7 +83,7 @@ class Piece
 
   public function rotate($board)
   {
-    $newShape = [];
+    $newShape = array_fill(0, count($this->shape[0]), array_fill(0, count($this->shape), 0));    
     for ($i = 0; $i < count($this->shape); $i++) {
       for ($j = 0; $j < count($this->shape[$i]); $j++) {
         if (!isset($newShape[$j])) {
@@ -98,9 +98,14 @@ class Piece
       for ($j = 0; $j < count($newShape[$i]); $j++) {
         $x = $this->x + (count($newShape) - $i);
         $y = $this->y + (count($newShape[$i]) - $j);
-        if ($newShape[$i][$j] && ($x < 0 || $x > count($board) || $y >= count($board[0]) || $board[$x][$y])) {
+
+        if ($newShape[$i][$j] == 1 && ($x < 0 || $x > count($board[0]) || $y >= count($board) || $board[$y][$x])) {
           $rotationAllowed = false;
+          break;
         }
+      }
+      if (!$rotationAllowed) {
+        break;
       }
     }
 

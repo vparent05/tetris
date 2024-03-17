@@ -24,7 +24,7 @@ function getPieceHTML(piece) {
       pieceDiv.appendChild(getBlockHTML(COLORS[piece.shapeIndex], x, y));
     });
   });
-  return piece;
+  return pieceDiv;
 }
 
 function getBlockHTML(color, x, y) {
@@ -43,7 +43,7 @@ async function loop() {
     return;
   }
   await new Promise(resolve => setTimeout(resolve, 1000 / (1 + game.score / 100)));
-  loop();
+  await loop();
 }
 
 function draw(game) {
@@ -82,7 +82,7 @@ document.addEventListener('keydown', event => {
         .then(draw);
       break;
     case ' ':
-      fetch('http://localhost:80/api.php?action=move&direction=drop')
+      fetch('http://localhost:80/api.php?action=move&direction=rotate')
         .then(res => res.json())
         .then(draw);
       break;
@@ -95,7 +95,8 @@ async function play() {
   boardElement.style.width = `${game.board[0].length * 30}px`;
   boardElement.style.height = `${game.board.length * 30}px`;
   draw(game);
-  loop();
+  await loop();
+  gameOverElement.setAttribute('style', 'display: block;');
 }
 
 play();
