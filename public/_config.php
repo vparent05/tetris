@@ -26,6 +26,7 @@ spl_autoload_register(function ($fullName) {
     $parts = explode("\\", $fullName);
     $len = count($parts);
     $className = $parts[$len - 1];
+    echo $GLOBALS["appDir"];
     if (file_exists($GLOBALS["appDir"] . "/models/{$className}.php"))
     {
       require_once $GLOBALS["appDir"] . "/models/{$className}.php";
