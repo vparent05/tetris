@@ -73,28 +73,26 @@ async function update() {
 }
 
 document.addEventListener('keydown', event => {
+  let direction;
   switch (event.key) {
     case 'a' || 'A':
-      fetch('http://localhost:80/api.php?action=move&direction=left')
-        .then(res => res.json())
-        .then(res => draw(res.game, res.leaderboard));
+      direction = 'left';
       break;
     case 'd' || 'D':
-      fetch('http://localhost:80/api.php?action=move&direction=right')
-        .then(res => res.json())
-        .then(res => draw(res.game, res.leaderboard));
+      direction = 'right';
       break;
     case 's' || 'S':
-      fetch('http://localhost:80/api.php?action=move&direction=down')
-        .then(res => res.json())
-        .then(res => draw(res.game, res.leaderboard));
+      direction = 'down'
       break;
     case ' ':
-      fetch('http://localhost:80/api.php?action=move&direction=rotate')
-        .then(res => res.json())
-        .then(res => draw(res.game, res.leaderboard));
+      direction = 'rotate';
       break;
+    default:
+      return;
   }
+  fetch(`http://localhost:80/api.php?action=move&direction=${direction}`)
+    .then(res => res.json())
+    .then(res => draw(res.game, res.leaderboard));
 });
 
 async function play() {
